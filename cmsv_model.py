@@ -268,7 +268,7 @@ class CMSVMamba(nn.Module):
         if not self.use_fast_path and not _enable_mamba_cpu_fallback():
             raise RuntimeError(
                 "CUDA is unavailable and mamba_ssm CPU reference kernels could not be enabled. "
-                "CMSV is configured to require Mamba and will not fall back to TransformerEncoder."
+                "CMSV is configured to require Mamba."
             )
         self.uses_mamba = True
 
