@@ -1,0 +1,66 @@
+{
+  "selection_metric": "val_f1",
+  "best_epoch": 26,
+  "decision_threshold": 0.8800000000000002,
+  "ablation": {
+    "mode": "full",
+    "eval_head": "cnn_mamba",
+    "cnn_loss_weight": 0.0,
+    "mamba_loss_weight": 0.0,
+    "cnn_mamba_loss_weight": 1.0
+  },
+  "reference_metrics": {
+    "loss": 0.10504134826478931,
+    "accuracy": 0.9781970375599424,
+    "precision": 0.6755709148647987,
+    "recall": 0.6620594965675027,
+    "f1": 0.6687469661798058,
+    "threshold": 0.5
+  },
+  "selected_metrics": {
+    "loss": 0.10504134826478931,
+    "accuracy": 0.9840315474306855,
+    "precision": 0.8685406387951126,
+    "recall": 0.6123112128146425,
+    "f1": 0.7182584419979847,
+    "threshold": 0.8800000000000002
+  },
+  "threshold_sweep": {
+    "start": 0.05,
+    "end": 0.95,
+    "step": 0.01,
+    "num_thresholds": 92
+  },
+  "platform_conditioning": {
+    "enabled": true,
+    "mapping": "ccs=0, clr=1, ont=2"
+  },
+  "feature_config": {
+    "feature_version": "legacy20",
+    "feature_dim": 20,
+    "window_size": 2000,
+    "channel_names": [
+      "del_cigar_rev",
+      "ins_cigar_rev",
+      "del_split_rev",
+      "ins_split_rev",
+      "inv_split_rev",
+      "dup_split_rev",
+      "bnd_split_rev",
+      "depth_rev",
+      "clip_sm_rev",
+      "clip_ms_rev",
+      "del_cigar_fwd",
+      "ins_cigar_fwd",
+      "del_split_fwd",
+      "ins_split_fwd",
+      "inv_split_fwd",
+      "dup_split_fwd",
+      "bnd_split_fwd",
+      "depth_fwd",
+      "clip_sm_fwd",
+      "clip_ms_fwd"
+    ],
+    "normalization": "zscore"
+  }
+}
