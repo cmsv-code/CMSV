@@ -40,6 +40,14 @@ conda activate cmsv
 
 `mamba env create -f environment_cmsv.yml` can be used as a faster drop-in replacement for `conda env create`.
 
+If environment creation fails halfway, remove the partial environment before retrying:
+
+```bash
+conda env remove -n cmsv
+conda env create -f environment_cmsv.yml
+conda activate cmsv
+```
+
 CMSV requires `mamba-ssm`, `causal-conv1d`, and a CUDA-enabled PyTorch build compatible with your NVIDIA driver.
 
 ## Input Requirements
