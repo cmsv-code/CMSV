@@ -22,8 +22,3 @@ dependencies:
   - wheel
   - setuptools
   - pip
-  - pip:
-      - --no-build-isolation
-      - pysam==0.23.3
-      - causal-conv1d==1.6.0
-      - mamba-ssm==2.3.0
