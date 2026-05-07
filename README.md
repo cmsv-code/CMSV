@@ -36,8 +36,10 @@ Create the conda environment:
 ```bash
 conda env create -f environment_cmsv.yml
 conda activate cmsv
-pip install pysam==0.23.3
-pip install --no-build-isolation causal-conv1d==1.6.0 mamba-ssm==2.3.0
+export PYTHONNOUSERSITE=1
+python -m pip install pysam==0.23.3
+MAX_JOBS=8 python -m pip install --no-cache-dir --no-build-isolation --no-binary=causal-conv1d causal-conv1d==1.6.0
+MAX_JOBS=8 python -m pip install --no-cache-dir --no-build-isolation --no-binary=mamba-ssm mamba-ssm==2.3.0
 ```
 
 `mamba env create -f environment_cmsv.yml` can be used as a faster drop-in replacement for `conda env create`.
@@ -48,12 +50,15 @@ If environment creation fails halfway, remove the partial environment before ret
 conda env remove -n cmsv
 conda env create -f environment_cmsv.yml
 conda activate cmsv
-pip install pysam==0.23.3
-pip install --no-build-isolation causal-conv1d==1.6.0 mamba-ssm==2.3.0
+export PYTHONNOUSERSITE=1
+python -m pip install pysam==0.23.3
+MAX_JOBS=8 python -m pip install --no-cache-dir --no-build-isolation --no-binary=causal-conv1d causal-conv1d==1.6.0
+MAX_JOBS=8 python -m pip install --no-cache-dir --no-build-isolation --no-binary=mamba-ssm mamba-ssm==2.3.0
 ```
 
 CMSV requires `mamba-ssm`, `causal-conv1d`, and a CUDA-enabled PyTorch build compatible with your NVIDIA driver.
 Use Python 3.10 for a clean install; recent `causal-conv1d` wheels use Python 3.10 type annotation syntax.
+The `--no-cache-dir` and `--no-binary` flags force local CUDA extension builds against the installed PyTorch/CUDA ABI.
 
 ## Input Requirements
 
