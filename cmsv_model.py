@@ -491,7 +491,7 @@ def create_model(
         raise ValueError(f"Unknown model_type: {model_type}. Only 'mamba' is supported.")
 
     if pretrained_weights is not None:
-        state_dict = torch.load(pretrained_weights, map_location=device)
+        state_dict = torch.load(pretrained_weights, map_location=device, weights_only=True)
         state_dict = _normalize_state_dict_keys(state_dict)
         incompatible = model.load_state_dict(state_dict, strict=False)
         allowed_missing_suffixes = (
