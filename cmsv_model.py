@@ -371,7 +371,7 @@ class CMSVMamba(nn.Module):
             platform_ids = torch.zeros(B, dtype=torch.long, device=x.device)
         else:
             platform_ids = platform_ids.to(device=x.device, dtype=torch.long).reshape(B)
-        platform_ids = platform_ids.clamp_(min=0, max=self.num_platforms - 1)
+        platform_ids = platform_ids.clamp(min=0, max=self.num_platforms - 1)
         platform_context = self.platform_embedding(platform_ids)
 
         # --- Slice into N × 200bp segments ---
@@ -429,7 +429,7 @@ class CMSVLoss(nn.Module):
 
     def forward(self, predictions: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
         predictions = torch.nan_to_num(predictions.float(), nan=0.5, posinf=1.0, neginf=0.0)
-        predictions = predictions.clamp_(1e-6, 1.0 - 1e-6)
+        predictions = predictions.clamp(1e-6, 1.0 - 1e-6)
         targets = targets.float()
         loss = F.binary_cross_entropy(predictions, targets, reduction='none')
         if self.pos_weight is not None:
