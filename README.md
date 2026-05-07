@@ -53,6 +53,7 @@ pip install --no-build-isolation causal-conv1d==1.6.0 mamba-ssm==2.3.0
 ```
 
 CMSV requires `mamba-ssm`, `causal-conv1d`, and a CUDA-enabled PyTorch build compatible with your NVIDIA driver.
+Use Python 3.10 for a clean install; recent `causal-conv1d` wheels use Python 3.10 type annotation syntax.
 
 ## Input Requirements
 

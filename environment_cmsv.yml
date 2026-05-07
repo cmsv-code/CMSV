@@ -6,7 +6,7 @@ channels:
   - nodefaults
 
 dependencies:
-  - python=3.9
+  - python=3.10
 
   # GPU PyTorch stack. The nvidia channel is required for pytorch-cuda.
   - pytorch=2.5.1
