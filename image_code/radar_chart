@@ -1,0 +1,131 @@
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+from matplotlib import font_manager
+import numpy as np
+
+# ==============================================================================
+# Global font configuration — applied to ALL plots in this script
+# ==============================================================================
+def configure_global_font():
+    """Prefer Arial; fall back to DejaVu Sans when Arial is unavailable."""
+    preferred = ["Arial", "Helvetica", "Liberation Sans", "DejaVu Sans"]
+    available = {f.name for f in font_manager.fontManager.ttflist}
+    chosen = next((f for f in preferred if f in available), "DejaVu Sans")
+
+    mpl.rcParams["font.family"] = "sans-serif"
+    mpl.rcParams["font.sans-serif"] = [chosen] + preferred
+    mpl.rcParams["pdf.fonttype"] = 42   # TrueType (editable in Illustrator)
+    mpl.rcParams["ps.fonttype"] = 42
+    mpl.rcParams["axes.unicode_minus"] = False
+    print(f"[Font] Using: {chosen}")
+
+configure_global_font()
+
+# ==============================================================================
+# Unified font-size scheme (used by all panels)
+# ==============================================================================
+FS_TITLE     = 20   # panel title
+FS_AXIS_LBL  = 16   # dataset labels around the radar
+FS_TICK      = 11   # numeric ticks on the r-axis (0.2, 0.4, ...)
+FS_LEGEND    = 14   # legend text
+
+# ==============================================================================
+# Data — values verified against version.docx (Word document)
+# Order of dataset_labels must match the order of values in each list.
+# ==============================================================================
+tools = ["MambaSV", "cuteSV2", "Sniffles2", "SVIM", "SVision"]
+dataset_labels = [
+    "69X CLR", "5X ONT", "10X ONT", "20X ONT", "48X ONT",
+    "5X CCS", "10X CCS", "28X CCS",
+    "5X CLR", "10X CLR", "20X CLR", "35X CLR",
+]
+
+# Detection F1 — all values reconciled to Word document
+f1_data = {
+    "DEL": {
+        "MambaSV":   [0.9751, 0.7163, 0.8911, 0.9588, 0.9666, 0.9024, 0.9363, 0.9529, 0.7698, 0.9118, 0.9440, 0.9668],
+        "cuteSV2":   [0.9757, 0.8128, 0.8961, 0.9467, 0.9650, 0.9166, 0.9352, 0.9523, 0.7856, 0.8581, 0.9432, 0.9655],
+        "Sniffles2": [0.9672, 0.8041, 0.8896, 0.9211, 0.9393, 0.8338, 0.9201, 0.9484, 0.7560, 0.8986, 0.9444, 0.9606],
+        "SVIM":      [0.9726, 0.7870, 0.8728, 0.9146, 0.9399, 0.8415, 0.9321, 0.9503, 0.7825, 0.8670, 0.9520, 0.9741],
+        "SVision":   [0.9673, 0.7874, 0.8841, 0.9105, 0.9456, 0.9058, 0.9294, 0.9452, 0.7614, 0.8488, 0.9369, 0.9601],
+    },
+    "INS": {
+        "MambaSV":   [0.9156, 0.8067, 0.8915, 0.9202, 0.9292, 0.8423, 0.9084, 0.9378, 0.5484, 0.7069, 0.8392, 0.8916],
+        "cuteSV2":   [0.9318, 0.7768, 0.8553, 0.8996, 0.9125, 0.8909, 0.9245, 0.9436, 0.5870, 0.7691, 0.8811, 0.9160],
+        "Sniffles2": [0.7650, 0.7382, 0.8113, 0.8469, 0.8855, 0.8266, 0.8995, 0.9304, 0.4061, 0.4658, 0.6415, 0.7078],
+        "SVIM":      [0.8544, 0.7228, 0.7971, 0.8448, 0.8748, 0.8225, 0.8966, 0.9162, 0.6448, 0.7303, 0.8390, 0.8715],
+        "SVision":   [0.9026, 0.6741, 0.7405, 0.7582, 0.7947, 0.8511, 0.8916, 0.8972, 0.4098, 0.7331, 0.8561, 0.8912],
+    },
+    "Total": {
+        "MambaSV":   [0.9148, 0.7547, 0.8797, 0.9240, 0.9320, 0.8677, 0.9187, 0.9422, 0.6470, 0.7885, 0.8672, 0.9025],
+        "cuteSV2":   [0.9098, 0.7804, 0.8595, 0.9049, 0.9202, 0.7891, 0.9054, 0.9151, 0.6449, 0.7807, 0.8722, 0.8975],
+        "Sniffles2": [0.8202, 0.7621, 0.8373, 0.8685, 0.8969, 0.8229, 0.8980, 0.9239, 0.5090, 0.5792, 0.7286, 0.7805],
+        "SVIM":      [0.8623, 0.7443, 0.8235, 0.8641, 0.8930, 0.8204, 0.8955, 0.9134, 0.6641, 0.7546, 0.8374, 0.8511],
+        "SVision":   [0.9100, 0.7206, 0.7988, 0.8178, 0.8549, 0.8691, 0.9051, 0.9132, 0.5222, 0.7758, 0.8756, 0.9100],
+    },
+}
+
+# ==============================================================================
+# Styling
+# ==============================================================================
+colors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd"]
+LINE_WIDTH = 3.0
+
+# ==============================================================================
+# Plotting
+# ==============================================================================
+def draw_radar(metric: str, filename: str, title: str) -> None:
+    num_vars = len(dataset_labels)
+    angles = np.linspace(0, 2 * np.pi, num_vars, endpoint=False).tolist()
+    angles += angles[:1]
+
+    fig, ax = plt.subplots(figsize=(10, 10), subplot_kw=dict(polar=True))
+    ax.set_theta_offset(np.pi / 2)
+    ax.set_theta_direction(-1)
+
+    # Hide default angular ticks; we place our own labels outside.
+    plt.xticks(angles[:-1], [""] * num_vars)
+    ax.set_rlim(0, 1.05)
+
+    # Outer dataset labels
+    r_label = 1.08
+    for i, label in enumerate(dataset_labels):
+        angle_rad = angles[i]
+        ha = "left" if 0 < angle_rad < np.pi else ("right" if np.pi < angle_rad < 2 * np.pi else "center")
+        va = "bottom" if angle_rad == 0 else ("top" if angle_rad == np.pi else "center")
+        ax.text(angle_rad, r_label, label, size=FS_AXIS_LBL, ha=ha, va=va)
+
+    # Radial ticks
+    ax.set_rlabel_position(0)
+    plt.yticks([0.2, 0.4, 0.6, 0.8, 1.0],
+               ["0.2", "0.4", "0.6", "0.8", "1.0"],
+               color="grey", size=FS_TICK)
+
+    # Tool curves
+    for i, tool in enumerate(tools):
+        values = f1_data[metric][tool].copy()
+        values += values[:1]
+        ax.plot(angles, values, linewidth=LINE_WIDTH, linestyle="solid",
+                color=colors[i], label=tool)
+
+    plt.title(title, size=FS_TITLE, color="black", y=1.12, fontweight="bold")
+    plt.savefig(filename, bbox_inches="tight", dpi=300)
+    plt.close()
+
+
+def draw_legend(filename: str) -> None:
+    fig = plt.figure(figsize=(12, 1.5))
+    handles = [plt.Line2D([0], [0], color=colors[i], lw=LINE_WIDTH)
+               for i in range(len(tools))]
+    fig.legend(handles, tools, loc="center", ncol=len(tools),
+               fontsize=FS_LEGEND, frameon=False)
+    plt.savefig(filename, bbox_inches="tight", dpi=300)
+    plt.close()
+
+
+if __name__ == "__main__":
+    draw_radar("DEL",   "f1_del_detection.png",   "F1 Score in Deletion")
+    draw_radar("INS",   "f1_ins_detection.png",   "F1 Score in Insertion")
+    draw_radar("Total", "f1_total_detection.png", "F1 Score in Total")
+    draw_legend("radar_legend_detection.png")
+    print("Detection radar plots saved.")
