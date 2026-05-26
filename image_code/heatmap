@@ -1,0 +1,118 @@
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+from matplotlib import font_manager
+import seaborn as sns
+import pandas as pd
+import numpy as np
+
+# ==============================================================================
+# Global font configuration
+# ==============================================================================
+def configure_global_font():
+    preferred = ["Arial", "Helvetica", "Liberation Sans", "DejaVu Sans"]
+    available = {f.name for f in font_manager.fontManager.ttflist}
+    chosen = next((f for f in preferred if f in available), "DejaVu Sans")
+    mpl.rcParams["font.family"] = "sans-serif"
+    mpl.rcParams["font.sans-serif"] = [chosen] + preferred
+    mpl.rcParams["pdf.fonttype"] = 42
+    mpl.rcParams["ps.fonttype"] = 42
+    mpl.rcParams["axes.unicode_minus"] = False
+    print(f"[Font] Using: {chosen}")
+
+configure_global_font()
+
+# ==============================================================================
+# Font sizes — same as Figure 3
+# ==============================================================================
+FS_TITLE    = 20
+FS_AXIS_LBL = 16
+FS_TICK     = 11
+FS_ANNOT    = 13   # numbers inside heatmap cells
+FS_CBAR     = 11   # colorbar tick labels
+
+# ==============================================================================
+# Data — updated with MIER
+# ==============================================================================
+tools     = ["CMSV", "cuteSV2", "Sniffles2", "SVIM"]
+platforms = ["PacBio CCS", "PacBio CLR", "Oxford Nanopore"]
+
+# Chinese Trio MIER (%)
+chinese = {
+    "PacBio CCS":      [1.43, 1.32, 0.90, 1.38],
+    "PacBio CLR":      [1.73, 2.44, 1.45, 2.73],
+    "Oxford Nanopore": [2.44, 2.74, 1.39, 3.11],
+}
+
+# Ashkenazi Trio MIER (%)
+ashkenazi = {
+    "PacBio CCS":      [1.52, 2.23, 2.24, 1.15],
+    "PacBio CLR":      [2.11, 3.45, 5.28, 4.75],
+    "Oxford Nanopore": [3.33, 2.83, 1.65, 3.28],
+}
+
+def make_df(data_dict):
+    """Return DataFrame with tools as index, platforms as columns."""
+    df = pd.DataFrame(data_dict, index=tools)
+    return df[platforms]   # ensure column order
+
+df_chinese   = make_df(chinese)
+df_ashkenazi = make_df(ashkenazi)
+
+# ==============================================================================
+# Shared color scale across both panels for fair comparison
+# ==============================================================================
+vmin = min(df_chinese.values.min(), df_ashkenazi.values.min())
+vmax = max(df_chinese.values.max(), df_ashkenazi.values.max())
+
+# Nature-style: light→dark blue sequential (lower MIER = better = light)
+CMAP = "RdYlGn_r"
+
+# ==============================================================================
+# Plot
+# ==============================================================================
+fig, axes = plt.subplots(1, 2, figsize=(14, 5),
+                         gridspec_kw={"wspace": 0.45})
+
+def draw_heatmap(ax, df, title, show_ylabel=True, show_cbar=False):
+    sns.heatmap(
+        df,
+        ax=ax,
+        annot=True,
+        fmt=".2f",
+        cmap=CMAP,
+        vmin=vmin,
+        vmax=vmax,
+        linewidths=2,
+        linecolor="white",
+        annot_kws={"size": FS_ANNOT, "weight": "bold"},
+        cbar=show_cbar,
+        cbar_kws={"label": "MIER (%)", "shrink": 0.8} if show_cbar else {},
+    )
+    ax.set_title(title, fontsize=FS_TITLE, fontweight="bold", pad=14)
+
+    # x-axis: platform names, no axis label
+    ax.set_xticklabels(ax.get_xticklabels(),
+                       fontsize=FS_TICK, rotation=0, ha="center")
+    ax.set_xlabel("", fontsize=0)   # no axis label
+
+    # y-axis: tool names, no axis label
+    if show_ylabel:
+        ax.set_yticklabels(ax.get_yticklabels(),
+                           fontsize=FS_TICK, rotation=0)
+    else:
+        ax.set_yticklabels([])
+    ax.set_ylabel("", fontsize=0)   # no axis label
+
+# Left panel: Chinese Trio (show y tick labels)
+draw_heatmap(axes[0], df_chinese,   "Chinese Trio MIER (%)",   show_ylabel=True,  show_cbar=False)
+
+# Right panel: Ashkenazi Trio (show y tick labels, show colorbar)
+draw_heatmap(axes[1], df_ashkenazi, "Ashkenazi Trio MIER (%)", show_ylabel=True, show_cbar=True)
+
+# Adjust colorbar tick font on the right panel
+cbar = axes[1].collections[0].colorbar
+if cbar:
+    cbar.ax.tick_params(labelsize=FS_CBAR)
+    cbar.set_label("MIER (%)", fontsize=FS_TICK)
+
+output = "
