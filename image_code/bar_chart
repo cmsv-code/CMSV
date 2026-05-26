@@ -1,0 +1,139 @@
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+from matplotlib import font_manager
+import numpy as np
+
+# ==============================================================================
+# Global font configuration — applied to ALL plots in this script
+# ==============================================================================
+def configure_global_font():
+    """Prefer Arial; fall back to DejaVu Sans when Arial is unavailable."""
+    preferred = ["Arial", "Helvetica", "Liberation Sans", "DejaVu Sans"]
+    available = {f.name for f in font_manager.fontManager.ttflist}
+    chosen = next((f for f in preferred if f in available), "DejaVu Sans")
+
+    mpl.rcParams["font.family"] = "sans-serif"
+    mpl.rcParams["font.sans-serif"] = [chosen] + preferred
+    mpl.rcParams["pdf.fonttype"] = 42
+    mpl.rcParams["ps.fonttype"] = 42
+    mpl.rcParams["axes.unicode_minus"] = False
+    print(f"[Font] Using: {chosen}")
+
+configure_global_font()
+
+# ==============================================================================
+# Unified font-size scheme (same as Figure 2)
+# ==============================================================================
+FS_TITLE     = 20
+FS_AXIS_LBL  = 16
+FS_TICK      = 11
+FS_LEGEND    = 14
+FS_BARLABEL  = 9    # numbers on top of bars
+
+# ==============================================================================
+# Data — verified against version.docx (lines 263-317)
+# ==============================================================================
+tools = ["CMSV", "cuteSV2", "Sniffles2", "SVIM", "SVision"]
+
+# SURVIVOR CLR F1, order follows `tools`
+f1_clr = {
+    "DEL": [0.9498, 0.9650, 0.9873, 0.9417, 0.9798],
+    "INS": [0.7506, 0.7215, 0.5860, 0.7876, 0.8041],
+    "DUP": [0.9838, 0.9749, 0.9733, 0.9837, 0.8235],
+    "INV": [0.9884, 0.9750, 0.9300, 0.8950, 0.1065],
+    "TRA": [0.9075, 0.7323, 0.8940, 0.7912, 0.0000],
+}
+
+# SURVIVOR ONT F1, order follows `tools`
+f1_ont = {
+    "DEL": [0.9818, 0.9813, 0.9858, 0.9792, 0.9883],
+    "INS": [0.7500, 0.8748, 0.5314, 0.9420, 0.8400],
+    "DUP": [0.9802, 0.9749, 0.9760, 0.9785, 0.9534],
+    "INV": [0.9899, 0.9438, 0.8582, 0.9446, 0.1300],
+    "TRA": [0.9299, 0.7847, 0.9019, 0.8745, 0.0000],
+}
+
+sv_keys = ["DEL", "INS", "DUP", "INV", "TRA"]
+sv_titles = {
+    "DEL": "DEL F1 Score",
+    "INS": "INS F1 Score",
+    "DUP": "DUP F1 Score",
+    "INV": "INV F1 Score",
+    "TRA": "TRA F1 Score",
+}
+
+# ==============================================================================
+# Styling
+# ==============================================================================
+# Wong color-blind-safe palette (recommended by Nature Methods).
+# High distinguishability across all five tools.
+colors = ["#0072B2", "#E69F00", "#009E73", "#D55E00", "#CC79A7"]
+
+# ==============================================================================
+# Plotting
+# ==============================================================================
+def plot_survivor_f1(output_name: str = "sim_survivor_f1_comparison.png") -> None:
+    fig, axes = plt.subplots(2, 3, figsize=(18, 12), gridspec_kw={"hspace": 0.45, "wspace": 0.28})
+    axes = axes.flatten()
+
+    x = np.arange(2)  # 0 = CLR, 1 = ONT
+    n_tools = len(tools)
+    total_width = 0.8
+    bar_width = total_width / n_tools
+
+    for i, key in enumerate(sv_keys):
+        ax = axes[i]
+
+        for j, tool in enumerate(tools):
+            clr_val = f1_clr[key][j]
+            ont_val = f1_ont[key][j]
+            pos = x + (j - (n_tools - 1) / 2) * bar_width
+
+            rects = ax.bar(
+                pos, [clr_val, ont_val],
+                width=bar_width, label=tool,
+                color=colors[j], edgecolor="black", linewidth=0.5,
+            )
+
+            # Annotate non-zero bars
+            for rect in rects:
+                h = rect.get_height()
+                if h > 0:
+                    ax.text(
+                        rect.get_x() + rect.get_width() / 2, h + 0.02,
+                        f"{h:.3f}",
+                        ha="center", va="bottom",
+                        fontsize=FS_BARLABEL, rotation=45,
+                    )
+
+        ax.set_title(sv_titles[key], fontsize=FS_TITLE, fontweight="bold", pad=10)
+        ax.set_xticks(x)
+        ax.set_xticklabels(["CLR", "ONT"], fontsize=FS_AXIS_LBL, fontweight="bold")
+        ax.set_ylabel("F1 Score", fontsize=FS_AXIS_LBL, fontweight="bold")
+        ax.tick_params(axis="y", labelsize=FS_TICK)
+        ax.set_ylim(0, 1.25)
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+        ax.grid(axis="y", linestyle="--", alpha=0.3)
+
+    # Remove the unused sixth panel
+    fig.delaxes(axes[5])
+
+    # Put legend in the freed bottom-right panel area
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(
+        handles, labels,
+        loc="center", bbox_to_anchor=(0.82, 0.25),
+        ncol=2, fontsize=FS_LEGEND, frameon=False,
+        title="Tools", title_fontsize=FS_AXIS_LBL,
+        borderpad=1, labelspacing=1,
+    )
+
+    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+    plt.savefig(output_name, dpi=300, bbox_inches="tight")
+    plt.close()
+    print(f"Saved: {output_name}")
+
+
+if __name__ == "__main__":
+    plot_survivor_f1()
