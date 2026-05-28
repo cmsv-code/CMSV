@@ -10,8 +10,6 @@ This repository contains the minimal code and pretrained weight needed to run:
 BAM -> feature generation -> model prediction -> clustering -> VCF
 ```
 
-Training code, training data, benchmarks, logs, and intermediate outputs are not included.
-
 ## Contents
 
 ```text
